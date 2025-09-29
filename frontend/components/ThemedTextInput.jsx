@@ -3,7 +3,7 @@ import React from 'react'
 
 const ThemedTextInput = ({style, ...props}) => {
   return (
-    <TextInput style = {[styles.textInput, style]} {...props}/>
+    <TextInput style = {[styles.textInput, style]} {...props} />
   )
 }
 
@@ -12,6 +12,8 @@ export default ThemedTextInput
 const styles = StyleSheet.create({
     textInput: {
         height: 50,
-        width: 250
+        width: 250,
+        borderWidth: 1,
+        borderRadius: 5,
     }
 })
