@@ -22,6 +22,7 @@ const [password, onPasswordChange] = React.useState('');
 const [confirmPassword, onConfirmPasswordChange] = React.useState('');
 const [showPassword, setShowPassword] = React.useState(false);
 
+const passwordsMatch = password === confirmPassword
 //Colors
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light
@@ -30,12 +31,17 @@ const router = useRouter();
 
 //sending data to my server
 function handleSubmit(){
+  if(password != confirmPassword){
+    alert("Passwords don't match")
+    return;
+  }
+
   const guardianData={
     name: name,
     surname: surname,
     age: age,
     email: email,
-    password: password,
+    password: confirmPassword,
   };
 
   axios.post("http://192.168.137.88:5000/register", guardianData).
@@ -68,7 +74,7 @@ function handleSubmit(){
 
         <ThemedView style={styles.passwordWrapper}>
           <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {true} style={{padding: 20}} />
-          <ThemedTextInput label = {"Confirm Password"} value = {confirmPassword} onChangeText={onConfirmPasswordChange} placeholder = {"Confirm Password"} secureTextEntry = {true} style={{padding: 20}} />
+          <ThemedTextInput label = {"Confirm Password"} value = {confirmPassword} onChangeText={onConfirmPasswordChange} placeholder = {"Confirm Password"} secureTextEntry = {true} style={{padding: 20, borderColor: passwordsMatch ? "green" : "red"}} />
        </ThemedView>
 
         <ThemedButton onPress={()=> handleSubmit()}>
