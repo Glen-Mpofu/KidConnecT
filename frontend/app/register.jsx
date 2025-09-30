@@ -3,13 +3,14 @@ import React from 'react'
 import ThemedView from '../components/ThemedView'
 import ThemedText from '../components/ThemedText'
 import ThemedTextInput from '../components/ThemedTextInput'
-import {Link} from "expo-router"
+import {Link, useRouter} from "expo-router"
 import ThemedButton from '../components/ThemedButton'
 import { Ionicons } from '@expo/vector-icons';
 import {Colors} from '../constants/Colors'
 
 //api access
 import axios from "axios"
+import ThemedLink from '../components/ThemedLink'
 
 const Register = () => {
 const [name, onNameChange] = React.useState('');
@@ -18,14 +19,16 @@ const [age, onAgeChange] = React.useState();
 const [email, onEmailChange] = React.useState('');
 
 const [password, onPasswordChange] = React.useState('');
+const [confirmPassword, onConfirmPasswordChange] = React.useState('');
 const [showPassword, setShowPassword] = React.useState(false);
 
 //Colors
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light
 
-//sending data to my server
+const router = useRouter();
 
+//sending data to my server
 function handleSubmit(){
   const guardianData={
     name: name,
@@ -40,6 +43,7 @@ function handleSubmit(){
     console.log(res.data);
     if(res.data.status == 'ok'){
       alert("Registration Successful");
+      router.push("/");
     }
     else{
       alert("Registration unsuccessful. Guardian Already has an Account");
@@ -64,13 +68,17 @@ function handleSubmit(){
 
         <ThemedView style={styles.passwordWrapper}>
           <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {true} style={{padding: 20}} />
+          <ThemedTextInput label = {"Confirm Password"} value = {confirmPassword} onChangeText={onConfirmPasswordChange} placeholder = {"Confirm Password"} secureTextEntry = {true} style={{padding: 20}} />
        </ThemedView>
 
-          <Link href = {"/"} onPress={console.log("we outside")} asChild>
-            <ThemedButton onPress={()=> handleSubmit()}>
-              <ThemedText style={{color: "black"}}>Sign Up</ThemedText> 
-            </ThemedButton>
-          </Link>
+        <ThemedButton onPress={()=> handleSubmit()}>
+          <ThemedText style={{color: "black"}}>Sign Up</ThemedText> 
+        </ThemedButton>
+       
+        <ThemedLink href = {"/"}>
+          <ThemedText>Already Have an Account? Sign In</ThemedText>
+        </ThemedLink>
+
       </ThemedView>
     </ThemedView>
   )
@@ -108,7 +116,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     justifyContent: "center",
     alignItems: "center", 
-    padding: 25,
+    padding: 50,
   },
   nameWrapper: {
     flex: 0,
