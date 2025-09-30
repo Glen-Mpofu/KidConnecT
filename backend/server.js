@@ -39,7 +39,7 @@ const createGuardianTableQuery =
     Surname VARCHAR(15), 
     Age INTEGER, 
     Email VARCHAR(100) UNIQUE PRIMARY KEY, 
-    Password VARCHAR(10) NOT NULL
+    Password VARCHAR(100) NOT NULL
 );`
 ;
 
@@ -52,9 +52,9 @@ app.post("/register", async (req, res) => {
     console.log(req.body);
     //getting the data sent from the frontend
     const { name, surname, age, email, password } = req.body;
-
+    const intAge = parseInt(age)
     //checking whether the specified guardian exists in the db or not
-    const oldGuardian = await pool.query("SELECT * FROM GUARDIAN WHERE EMAIL = "+email)
+    const oldGuardian = await pool.query("SELECT * FROM GUARDIAN WHERE EMAIL = $1", [email])
     if(oldGuardian.rowCount != 0)
     {
         return res.send({status: "error", data: "Guardian Already Has An Account"})
@@ -63,14 +63,14 @@ app.post("/register", async (req, res) => {
     //encrypting the database
     const encryptPassword = await bcrypt.hash(password, 10)
 
-    const userData = name+", "+surname+", "+age+", "+email+", "+password
+    const userData = [name, surname, intAge, email, encryptPassword]
     //inserting the user
     pool.query(
         `INSERT INTO Guardian(
             NAME, SURNAME, AGE, EMAIL, PASSWORD
         )
-        VALUES( ` + userData + `)    
-        ;`
+        VALUES($1, $2, $3, $4, $5)    
+        `, userData
     ).then(()=> console.log("Guardian Account Created")).
     catch((e) => console.log(e))
 
