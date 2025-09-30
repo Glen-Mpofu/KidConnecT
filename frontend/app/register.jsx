@@ -8,6 +8,9 @@ import ThemedButton from '../components/ThemedButton'
 import { Ionicons } from '@expo/vector-icons';
 import {Colors} from '../constants/Colors'
 
+//api access
+import axios from "axios"
+
 const Register = () => {
 const [name, onNameChange] = React.useState('');
 const [surname, onSurnameChange] = React.useState('');
@@ -20,6 +23,30 @@ const [showPassword, setShowPassword] = React.useState(false);
 //Colors
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light
+
+//sending data to my server
+
+function handleSubmit(){
+  const guardianData={
+    name: name,
+    surname: surname,
+    age: age,
+    email: email,
+    password: password,
+  };
+
+  axios.post("http://192.168.137.1:5000/register", guardianData).
+  then(res => {
+    console.log(res.data);
+    if(res.data.status == 'ok'){
+      alert("Registration Successful");
+    }
+    else{
+      alert("Registration unsuccessful. Guardian Already has an Account");
+    }
+  }).catch((e) => console.log(e))
+}
+
   return (
     <ThemedView style={styles.container}>
       <Image source={require("../assets/images/bg.jpg")} style = {styles.bgImage}/>
@@ -36,11 +63,11 @@ const theme = Colors[colorScheme] ?? Colors.light
         <ThemedTextInput label = {"Email"} value = {email} onChangeText={onEmailChange} placeholder = {"Email"} keyboardType='email-address'/>
 
         <ThemedView style={styles.passwordWrapper}>
-          
           <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {true} style={{padding: 20}} />
        </ThemedView>
-          <Link href = {"/"} asChild>
-            <ThemedButton>
+
+          <Link href = {"/"} onPress={console.log("we outside")} asChild>
+            <ThemedButton onPress={()=> handleSubmit()}>
               <ThemedText style={{color: "black"}}>Sign Up</ThemedText> 
             </ThemedButton>
           </Link>
@@ -56,7 +83,8 @@ const styles = StyleSheet.create({
 
   },
   heading: {
-    fontSize: 50
+    fontSize: 50,
+    fontWeight: "700"
   },
   icon: {
     width: 50,
