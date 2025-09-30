@@ -3,7 +3,7 @@ import React from 'react'
 
 const ThemedView = ({style, children, ...props}) => {
   return (
-    <View style = {styles.container [style]} {...props}>{children}</View>
+    <View style = {[styles.container, style]} {...props}>{children}</View>
   )
 }
 
@@ -13,5 +13,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: "column",
+        width: "100%"
     }
 })

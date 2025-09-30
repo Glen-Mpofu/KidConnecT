@@ -13,11 +13,12 @@ export default ThemedButton
 
 const styles = StyleSheet.create({
     button: {
-        width: 100,
+        width: 300,
         height: 50,
         borderWidth: 1,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 5
+        borderRadius: 5,
+        
     }
 })
