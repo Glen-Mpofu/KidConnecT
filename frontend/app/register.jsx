@@ -35,7 +35,7 @@ function handleSubmit(){
     password: password,
   };
 
-  axios.post("http://192.168.137.1:5000/register", guardianData).
+  axios.post("http://192.168.137.88:5000/register", guardianData).
   then(res => {
     console.log(res.data);
     if(res.data.status == 'ok'){
