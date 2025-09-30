@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Image, Pressable, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native'
 import React from 'react'
 import ThemedView from '../components/ThemedView'
 import ThemedText from '../components/ThemedText'
@@ -6,40 +6,42 @@ import ThemedTextInput from '../components/ThemedTextInput'
 import {Link} from "expo-router"
 import ThemedButton from '../components/ThemedButton'
 import { Ionicons } from '@expo/vector-icons';
+import {Colors} from '../constants/Colors'
 
 const Register = () => {
 const [name, onNameChange] = React.useState('');
 const [surname, onSurnameChange] = React.useState('');
-const [age, onAgeChange] = React.useState(0);
+const [age, onAgeChange] = React.useState();
 const [email, onEmailChange] = React.useState('');
 
 const [password, onPasswordChange] = React.useState('');
 const [showPassword, setShowPassword] = React.useState(false);
 
+//Colors
+const colorScheme = useColorScheme();
+const theme = Colors[colorScheme] ?? Colors.light
   return (
     <ThemedView style={styles.container}>
+      <Image source={require("../assets/images/bg.jpg")} style = {styles.bgImage}/>
 
       <ThemedView style={styles.card}>
-        <ThemedText>Sign Up!</ThemedText>
+        <ThemedText style={[styles.heading, {color: theme.text}]}>Sign Up!</ThemedText>
 
-        <ThemedTextInput label = {"Name"} value = {name} onChangeText={onNameChange} placeholder = {"Name"}/>
-        <ThemedTextInput label = {"Surname"} value = {surname} onChangeText={onSurnameChange} placeholder = {"Surname"}/>
+        <ThemedView style={styles.nameWrapper}>
+          <ThemedTextInput label = {"Name"} value = {name} onChangeText={onNameChange} placeholder = {"Name"} style={styles.nameTI}/>
+          <ThemedTextInput label = {"Surname"} value = {surname} onChangeText={onSurnameChange} placeholder = {"Surname"} style={styles.nameTI}/>
+        </ThemedView>
+
         <ThemedTextInput label = {"Age"} value = {age} onChangeText={onAgeChange} placeholder = {"Age"}/>
         <ThemedTextInput label = {"Email"} value = {email} onChangeText={onEmailChange} placeholder = {"Email"} keyboardType='email-address'/>
 
         <ThemedView style={styles.passwordWrapper}>
           
           <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {true} style={{padding: 20}} />
-
-          <TouchableOpacity onPress={{}}>
-            <Ionicons name='eye' size={20} style={styles.icon}/>
-          </TouchableOpacity>  
-
-        </ThemedView>
-
+       </ThemedView>
           <Link href = {"/"} asChild>
             <ThemedButton>
-              <ThemedText>Sign Up</ThemedText> 
+              <ThemedText style={{color: "black"}}>Sign Up</ThemedText> 
             </ThemedButton>
           </Link>
       </ThemedView>
@@ -52,6 +54,9 @@ export default Register
 const styles = StyleSheet.create({
   container: {
 
+  },
+  heading: {
+    fontSize: 50
   },
   icon: {
     width: 50,
@@ -75,6 +80,24 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     justifyContent: "center",
     alignItems: "center", 
-    padding: 25
+    padding: 25,
+  },
+  nameWrapper: {
+    flex: 0,
+    //backgroundColor: "red",
+    position: "static",
+    marginVertical: 10,
+    justifyContent: "center",
+    alignItems: "center", 
+    padding: 25,
+    flexDirection: "row"
+  },
+  bgImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%"
+  },
+  nameTI: {
+    width: 150
   }
 })
