@@ -15,7 +15,6 @@ import { Ionicons } from '@expo/vector-icons';
 const Login = () => {
  const [email,setEmail]=useState('');
  const [password,setPassword]=useState('');
- const [newPassord,setNewPassword]=useState('');
 //theme
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light;
@@ -24,7 +23,7 @@ const [pTaBorderColor, setPasswordBorderColor] = React.useState(theme.tiBorderCo
 const [eTaBorderColor, setEmailBorderColor] = React.useState(theme.tiBorderColor)
 
 const router = useRouter()
-function handleLogin(){
+async function handleLogin(){
 
   const loginData={
     email: email,
@@ -53,8 +52,21 @@ function handleLogin(){
   }).catch((e)=> console.log(e))
 }
 
-function handlePasswordChange(){
-  alert("Password Change")
+async function handlePasswordChange(){
+  const changePasswordData = {email: email}
+  if(email == "" || email == null){
+    alert("Please enter your email address")
+    return;
+  }
+
+  axios.post("http://192.168.137.1:5000/forgot-password", changePasswordData).
+  then(res => {
+    if(res.data.status === "error"){
+      alert(res.data.data)
+    }
+  })
+
+  
 }
 
 //Modal
@@ -90,20 +102,18 @@ return (
           visible={modalVisible}
         >
           <ThemedView style={styles.modalThemeContainer}>
+            <ThemedText style={[styles.heading, {color: theme.text}]}>Forgot Password</ThemedText>
             <ThemedTextInput value={email} onChangeText={setEmail} label = {"Email"} placeholder = {"Email"} keyboardType='email-address' style={[styles.textStyle, {borderColor: eTaBorderColor}]} />
-            <ThemedTextInput value={newPassord} onChangeText = {setNewPassword} placeholder = {"New Password"} secureTextEntry = {true} style={[styles.textStyle, {borderColor: pTaBorderColor}]}/>
-
+            
             <ThemedButton onPress={()=> handlePasswordChange()} style={{backgroundColor: "brown"}}>  
-              <ThemedText>Change</ThemedText>
+              <ThemedText>Request Reset Code</ThemedText>
             </ThemedButton>
 
-            <TouchableOpacity onPress={closeForgotPasswordModal}>
-              <Ionicons name="arrow-back" size={35} color={'brown'} style={styles.backIcon}/>
+            <TouchableOpacity onPress={closeForgotPasswordModal} style={styles.backIcon}>
+              <Ionicons name="arrow-back" size={35} color={'brown'} />
             </TouchableOpacity>
           </ThemedView>
         </Modal>
-
-
     </ThemedView>
   )
 }
@@ -149,6 +159,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 50,
     alignSelf: "flex-start",
-    padding: 50
+    padding: 50,
+    height: 35,
+    width: 35
   }
 })

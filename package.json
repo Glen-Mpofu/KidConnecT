@@ -2,9 +2,11 @@
   "dependencies": {
     "@react-native-vector-icons/ionicons": "^12.3.0",
     "express": "^5.1.0",
+    "nanoid": "^5.1.6",
     "nodemon": "^3.1.10",
     "react-native-swipe-button": "^0.0.4",
     "react-native-vector-icons": "^10.3.0",
+    "resend": "^6.1.1",
     "rn-swipe-button": "^3.0.1"
   }
 }

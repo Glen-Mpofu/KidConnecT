@@ -1,14 +1,19 @@
 const express = require("express");
 const {Pool} = require("pg");  
 require("dotenv").config();
+const { nanoid } = require("nanoid")
 
-const app = express();
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY) // npm install resend
+
+const app = express(); 
 
 //password encryption
 const bcrypt = require("bcrypt");
 
 //enabling Cross Origin Resurce Sharing for the app to run on web
 const cors = require("cors");
+
 app.use(cors({
     origin: "*"
 }))
@@ -96,6 +101,39 @@ app.post("/login", async (req, res) => {
 
     res.send({status: "ok", data: "Login Successful"})
 })
+
+//password change
+app.post("/forgot-password", async (req, res) => {
+    console.log(req.body)
+    const {email} = req.body
+
+    const findUser = await pool.query("SELECT EMAIL FROM GUARDIAN WHERE EMAIL = $1", [email])
+    if(findUser.rowCount <= 0){
+        return res.send({status: "error", data: "User Not Found"})
+    }
+
+    //generating reset code npm install nanoid
+    const resetCode = nanoid(5).toUpperCase();
+
+    //prepare email
+    const emailData = {
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Password Reset Code",
+        html: `<h1> Your password reset code is: ${resetCode} </h1>`
+    };
+
+    try {
+        const response = await resend.emails.send(emailData)
+            console.log("Email sent response:", response);
+        return res.send({status: "email sent", data: "Email Sent. Check your Gmail for the reset code"})
+    } catch (error) {
+        console.log(error)
+        return res.send({status: "error", data: "Failed to send email"})    
+    }
+        
+})
+
 //starting the server
 const port = process.env.PORT
 app.listen(port, () => console.log("Listening to port "+port))
