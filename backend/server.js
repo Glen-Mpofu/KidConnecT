@@ -77,6 +77,25 @@ app.post("/register", async (req, res) => {
     res.send({status: "ok", data: "Guardian Created"})
 })
 
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body
+    console.log(req.body);
+
+    const checker = pool.query("Select EMAIL, PASSWORD FROM GUARDIAN WHERE EMAIL = $1", [email])
+    if((await checker).rowCount <= 0){
+        return res.send({ status : "account error", data: "Guardian Account Doesn't Exit. Please Create an Account"})
+    }
+
+    const row = (await checker).rows[0]
+    const hashedPassword = row.password
+    const comparison = await bcrypt.compare(password, hashedPassword)
+
+    if(!comparison){
+        return res.send({status: "password error", data: "Wrong Password"});
+    }
+
+    res.send({status: "ok", data: "Login Successful"})
+})
 //starting the server
 const port = process.env.PORT
 app.listen(port, () => console.log("Listening to port "+port))

@@ -1,10 +1,13 @@
 export const Colors = {
+    error: "red",
 
     light: {
-        text: "brown"
+        text: "brown",
+        tiBorderColor: "green"
     },
     dark: {
-        text: "brown"
+        text: "brown",
+        tiBorderColor: "green"
     }
 
 }
