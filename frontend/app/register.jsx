@@ -12,18 +12,22 @@ import {Colors} from '../constants/Colors'
 import axios from "axios"
 import ThemedLink from '../components/ThemedLink'
 
+import { Toast } from 'toastify-react-native'
+
 const Register = () => {
 const [name, onNameChange] = React.useState('');
 const [surname, onSurnameChange] = React.useState('');
-const [age, onAgeChange] = React.useState();
+const [age, onAgeChange] = React.useState("21");
 const [email, onEmailChange] = React.useState('');
 
 const [password, onPasswordChange] = React.useState('');
 const [confirmPassword, onConfirmPasswordChange] = React.useState('');
 const [showPassword, setShowPassword] = React.useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
 const passwordsMatch = password === confirmPassword
 //Colors
+
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light
 
@@ -32,29 +36,36 @@ const router = useRouter();
 //sending data to my server
 function handleSubmit(){
   if(password != confirmPassword){
-    alert("Passwords don't match")
+    Toast.show({
+      type: "error",
+      text1: "Passwords don't match"
+    })
     return;
   }
 
   const guardianData={
     name: name,
     surname: surname,
-    age: age,
+    age: Number(age),
     email: email,
     password: confirmPassword,
   };
-
-  alert(guardianData)
 
   axios.post("http://192.168.137.1:5000/register", guardianData).
   then(res => {
     console.log(res.data);
     if(res.data.status == 'ok'){
-      alert("Registration Successful");
+      Toast.show({
+        type: "success",
+        text1: res.data.data
+      })
       router.push("/");
     }
     else{
-      alert("Registration unsuccessful. Guardian Already has an Account");
+      Toast.show({
+        type: "error",
+        text1: res.data.data
+      });
     }
   }).catch((e) => console.log(e))
 }
@@ -75,11 +86,23 @@ function handleSubmit(){
         <ThemedTextInput label = {"Email"} value = {email} onChangeText={onEmailChange} placeholder = {"Email"} keyboardType='email-address'/>
 
         <ThemedView style={styles.passwordWrapper}>
-          <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {true} style={{padding: 20}} />
-          <ThemedTextInput label = {"Confirm Password"} value = {confirmPassword} onChangeText={onConfirmPasswordChange} placeholder = {"Confirm Password"} secureTextEntry = {true} style={{padding: 20, borderColor: passwordsMatch ? "green" : "red"}} />
+          <View style={styles.passwordContainer}>      
+            <ThemedTextInput label = {"Password"} value = {password} onChangeText={onPasswordChange} placeholder = {"Password"} secureTextEntry = {showPassword} style={{padding: 20, margin: 0}} />
+
+            <Pressable onPress={()=>setShowPassword(!showPassword)}>
+              <Ionicons style = {styles.eyeIcon} name={showPassword ? "eye" : "eye-off" } size={30} color={"white"}/>
+            </Pressable>
+          </View>
+          
+          <View style={styles.passwordContainer}> 
+            <ThemedTextInput label = {"Confirm Password"} value = {confirmPassword} onChangeText={onConfirmPasswordChange} placeholder = {"Confirm Password"} secureTextEntry = {showConfirmPassword} style={{padding: 20, borderColor: passwordsMatch ? "green" : "red", margin: 0}} />
+            <Pressable onPress={()=>setShowConfirmPassword(!showConfirmPassword)}>
+              <Ionicons style = {styles.eyeIcon} name={showConfirmPassword ? "eye" : "eye-off" } size={30} color={"white"}/>
+            </Pressable>
+          </View>
        </ThemedView>
 
-        <ThemedButton onPress={()=> handleSubmit()}>
+        <ThemedButton onPress={()=> handleSubmit()} style={{marginTop: 5}}>
           <ThemedText style={{color: "black"}}>Sign Up</ThemedText> 
         </ThemedButton>
        
@@ -125,6 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center", 
     padding: 50,
+    
   },
   nameWrapper: {
     flex: 0,
@@ -143,5 +167,16 @@ const styles = StyleSheet.create({
   },
   nameTI: {
     width: 150
-  }
+  },
+  eyeIcon:{
+    alignSelf:"center",
+    margin: 10
+  },
+  passwordContainer:{
+    height: 30,
+    width: 300, 
+    flexDirection: "row",
+    marginBottom: 30,
+    paddingTop: 5
+  },
 })

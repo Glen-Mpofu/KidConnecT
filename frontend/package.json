@@ -12,13 +12,17 @@
   "dependencies": {
     "axios": "^1.12.2",
     "expo": "~54.0.10",
-    "expo-router": "~6.0.8",
+    "expo-router": "~6.0.10",
     "expo-status-bar": "~3.0.8",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-native": "0.81.4",
+    "react-native-expo-swipe-button": "^1.0.2",
     "react-native-swipe-button": "^0.0.4",
-    "react-native-web": "^0.21.0"
+    "react-native-toast-message": "^1.6.0",
+    "react-native-web": "^0.21.0",
+    "rn-swipe-button": "^3.0.1",
+    "toastify-react-native": "^7.2.3"
   },
   "private": true
 }

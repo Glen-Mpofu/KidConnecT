@@ -11,10 +11,16 @@ import axios from 'axios'
 import { Link, useRouter } from 'expo-router'
 import { Modal } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
+import ThemedLink from '../components/ThemedLink'
+
+//toast 
+import {Toast} from 'toastify-react-native'
 
 const Login = () => {
- const [email,setEmail]=useState('');
- const [password,setPassword]=useState('');
+ const [email,setEmail]=React.useState('');
+ const [password,setPassword]=React.useState('');
+
+ const [showPassword, setShowPassword] = React.useState(false)
 //theme
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light;
@@ -35,37 +41,51 @@ async function handleLogin(){
   then(res => {
     console.log(loginData)
     if(res.data.status === "ok"){
-      alert(res.data.data)
+      Toast.show({
+        type: "success",
+        text1: res.data.data
+      })
+
       setEmailBorderColor(theme.tiBorderColor)
       setPasswordBorderColor(theme.tiBorderColor)
       router.push("/dashboard")
     }
     else if(res.data.status === "account error"){
       setEmailBorderColor(Colors.error)
-      alert(res.data.data);
+      Toast.show({
+        type: "error",
+        text1: res.data.data
+      })
     }
     else if(res.data.status === "password error"){
       setPasswordBorderColor(Colors.error)
-      alert(res.data.data);      
+      Toast.show({
+        type: "error",
+        text1: res.data.data
+      })      
     }     
-
   }).catch((e)=> console.log(e))
 }
 
 async function handlePasswordChange(){
   const changePasswordData = {email: email}
   if(email == "" || email == null){
-    alert("Please enter your email address")
+    Toast.show({
+        type: "error",
+        text1: "Please enter your email address"
+      })
     return;
   }
 
   axios.post("http://192.168.137.1:5000/forgot-password", changePasswordData).
   then(res => {
     if(res.data.status === "error"){
-      alert(res.data.data)
+      Toast.show({
+        type: "error",
+        text1: res.data.data
+      })
     }
   })
-
   
 }
 
@@ -83,8 +103,16 @@ return (
     <ThemedView style={styles.container}> 
     <Image source={require("../assets/images/bg.jpg")} style={styles.bgImage}/>
       <ThemedText style={[styles.heading, {color: theme.text}]}> Login</ThemedText>
+      <ThemedText style={[styles.paraText, {color: theme.text}]}>Welcome back to KidConnecT!</ThemedText>
+
         <ThemedTextInput value={email} onChangeText={setEmail} label = {"Email"} placeholder = {"Email"} keyboardType='email-address' style={[styles.textStyle, {borderColor: eTaBorderColor}]} />
-        <ThemedTextInput value={password} onChangeText = {setPassword} placeholder = {"Password"} secureTextEntry = {true} style={[styles.textStyle, {borderColor: pTaBorderColor}]}/>
+
+        <View style={styles.passwordContainer}>
+          <ThemedTextInput value={password} onChangeText = {setPassword} placeholder = {"Password"} secureTextEntry = {showPassword} style={[styles.textStyle, {borderColor: pTaBorderColor, width: 260, margin: 0}]}/>        
+          <Pressable onPress={()=>setShowPassword(!showPassword)}>
+            <Ionicons style = {styles.icon} name={showPassword ? "eye" : "eye-off" } size={30} color={"white"}/>
+          </Pressable>
+        </View>
 
         <View style={styles.forgotPasswordContainer}>
           <Pressable onPress={openForgotPasswordModal}>
@@ -96,6 +124,10 @@ return (
           <ThemedText>Log in</ThemedText>
         </ThemedButton>
 
+        <ThemedLink href = {"/register"}>
+          <ThemedText>New to KidConnecT? Create Account</ThemedText>
+        </ThemedLink>
+
         <Modal 
           transparent={true}
           animationType='fade'
@@ -105,7 +137,9 @@ return (
             <ThemedText style={[styles.heading, {color: theme.text}]}>Forgot Password</ThemedText>
             <ThemedTextInput value={email} onChangeText={setEmail} label = {"Email"} placeholder = {"Email"} keyboardType='email-address' style={[styles.textStyle, {borderColor: eTaBorderColor}]} />
             
-            <ThemedButton onPress={()=> handlePasswordChange()} style={{backgroundColor: "brown"}}>  
+            <ThemedButton onPress={()=> 
+              handlePasswordChange()
+            } style={{backgroundColor: "brown"}}>  
               <ThemedText>Request Reset Code</ThemedText>
             </ThemedButton>
 
@@ -130,7 +164,6 @@ const styles = StyleSheet.create({
     width:"100%",
     height:"100%",
     opacity: 1,
-
   },
   textStyle:{
     zIndex: 1,
@@ -138,6 +171,11 @@ const styles = StyleSheet.create({
   heading:{
     zIndex: 1,
     fontSize: 50
+  },
+  paraText:{
+    zIndex: 1,
+    fontSize: 20,
+    fontStyle: "italic"
   },
   forgotPassword: {
     fontSize: 13,
@@ -148,10 +186,17 @@ const styles = StyleSheet.create({
   forgotPasswordContainer:{
     height: 30,
     width: 300, 
+    marginTop: 30
+  },
+  passwordContainer:{
+    height: 30,
+    width: 300, 
+    flexDirection: "row",
+    marginTop: 8
   },
   modalThemeContainer: {
     flex: 1,
-    backgroundColor: "rgba(187, 240, 192, 0.6)",
+    backgroundColor: "rgba(187, 240, 192, 0.9)",
     justifyContent: "center",
     alignItems: "center"
   },
@@ -162,5 +207,9 @@ const styles = StyleSheet.create({
     padding: 50,
     height: 35,
     width: 35
-  }
+  }, 
+  icon:{
+    alignSelf:"center",
+    margin: 10
+  },
 })
