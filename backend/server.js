@@ -3,8 +3,9 @@ const {Pool} = require("pg");
 require("dotenv").config();
 const { nanoid } = require("nanoid")
 
+const { sendEmail } = require("./mailer.js");
+
 const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY) // npm install resend
 
 const app = express(); 
 
@@ -115,17 +116,14 @@ app.post("/forgot-password", async (req, res) => {
     //generating reset code npm install nanoid
     const resetCode = nanoid(5).toUpperCase();
 
-    //prepare email
-    const emailData = {
-        from: process.env.EMAIL,
-        to: email,
-        subject: "Password Reset Code",
-        html: `<h1> Your password reset code is: ${resetCode} </h1>`
-    };
-
     try {
-        const response = await resend.emails.send(emailData)
-            console.log("Email sent response:", response);
+       await sendEmail(
+        email, 
+        "Password Reset Request",
+        `Your password reset code is: ${resetCode}`,
+        `<p>Your password reset code is: <b>${resetCode}</b> </p>`
+       )
+        
         return res.send({status: "email sent", data: "Email Sent. Check your Gmail for the reset code"})
     } catch (error) {
         console.log(error)
