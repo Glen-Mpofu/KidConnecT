@@ -8,9 +8,6 @@ import LogoutDrawer from '../../components/LogoutDrawer';
 import { Ionicons } from '@expo/vector-icons';
 
 const DashboardLayout = () => {
-    const [fonts] = useFonts({
-        AlanSans: require("../../assets/fonts/AlanSans-VariableFont_wght.ttf")
-    })
     const router = useRouter(); 
 
     const toastConfig = {
@@ -32,6 +29,7 @@ const DashboardLayout = () => {
     drawerContent={(props) => <LogoutDrawer {...props}/>}
       screenOptions={{
         headerTitleAlign: "center",
+        headerTitleStyle: {fontStyle: "AlanSans"}
       }}
     >
       <Drawer.Screen name="dashboard" options={{drawerLabel: "Home", title: "Home",

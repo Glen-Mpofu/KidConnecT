@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, Image, useColorScheme, Pressable, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TextInput, Image, useColorScheme, Pressable, TouchableOpacity, Platform } from 'react-native'
 import React, { use, useState } from 'react'
 import ThemedText from '../components/ThemedText'
 import ThemedView from '../components/ThemedView'
@@ -36,8 +36,10 @@ async function handleLogin(){
     password: password,
   };
 
+  const baseUrl = Platform.OS === "web" ? "http://localhost:5000/login" : "http://192.168.137.1:5000/login"
+
   //https://www.youtube.com/watch?v=hsNlz7-abd0
-  axios.post("http://192.168.137.1:5000/login", loginData).
+  axios.post(baseUrl, loginData, {withCredentials: true}).
   then(res => {
     console.log(loginData)
     if(res.data.status === "ok"){

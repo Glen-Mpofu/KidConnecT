@@ -18,7 +18,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 
 app.use(cors({
-    origin: "*", 
+    origin: ["http://localhost:8081", "http://192.168.137.1:8081"], 
     credentials: true
 }))
 
@@ -42,7 +42,7 @@ app.use(session({
         false to delete it if no data has been set to it
     */
     cookie: {
-        secure: true,
+        secure: false,
         /*
             true sends the cookie over HTTPS and false over HTTP
         */
@@ -166,13 +166,33 @@ app.post("/forgot-password", async (req, res) => {
         
 })
 
+// Logout logic
 app.post("/logout", async (req, res) => {
     req.session.destroy(err => {
         if(err) return res.send({status: "error", data: "Login Failed"});
-        res.clearCookie("kidconnectsession1");
+        res.clearCookie("connect.sid");
         res.send({status: "ok", data: "Loggout Successful"})
     });
 })
 
+// sending session
+app.get("/session", async (req, res) => {
+    if(req.session.user){
+        console.log(req.session.user)
+        const e = req.session.user.email
+        pool.query(`
+                SELECT * FROM GUARDIAN WHERE EMAIL = $1
+            `, [e]).
+            then((result) => {
+                //const {name, surname, age, email, password} = res.rows[0];
 
-
+                res.send({ status: "ok", data:  result.rows[0]})
+                console.log(res.rows[0])
+            }).catch(err => {
+                console.log(err)
+            })
+            
+    }else{
+        res.send({ status: "no-session"})
+    }
+})
