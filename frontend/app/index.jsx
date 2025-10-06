@@ -43,25 +43,28 @@ async function handleLogin(){
     if(res.data.status === "ok"){
       Toast.show({
         type: "success",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       })
 
       setEmailBorderColor(theme.tiBorderColor)
       setPasswordBorderColor(theme.tiBorderColor)
-      router.push("/dashboard")
+      router.push("/(dashboard)/dashboard")
     }
     else if(res.data.status === "account error"){
       setEmailBorderColor(Colors.error)
       Toast.show({
         type: "error",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       })
     }
     else if(res.data.status === "password error"){
       setPasswordBorderColor(Colors.error)
       Toast.show({
         type: "error",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       })      
     }     
   }).catch((e)=> console.log(e))
@@ -72,7 +75,8 @@ async function handlePasswordChange(){
   if(email == "" || email == null){
     Toast.show({
         type: "error",
-        text1: "Please enter your email address"
+        text1: "Please enter your email address",
+        useModal: false
       })
     return;
   }
@@ -82,7 +86,8 @@ async function handlePasswordChange(){
     if(res.data.status === "error"){
       Toast.show({
         type: "error",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       })
     }
   })

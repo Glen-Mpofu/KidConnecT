@@ -1,4 +1,6 @@
 const express = require("express");
+const session = require("express-session") // npm install express-session
+
 const {Pool} = require("pg");  
 require("dotenv").config();
 const { nanoid } = require("nanoid")
@@ -16,10 +18,38 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 
 app.use(cors({
-    origin: "*"
+    origin: "*", 
+    credentials: true
 }))
 
 app.use(express.json()) // allows for JSON passing
+
+//starting the server
+const port = process.env.PORT
+app.listen(port, () => console.log("Listening to port "+port))
+
+// allowing our express api to use sessions to save user data when they are logged in
+app.use(session({
+    secret: "kidconnectsession1", /*
+        string used to sign the session id cookie. 
+        signing prevents clients from tampering with their session id. 
+        should be long, random and kept secret
+    */
+    resave: false,
+    saveUninitialized: false,
+    /*
+        controls whether a new but unmodified session is saved
+        false to delete it if no data has been set to it
+    */
+    cookie: {
+        secure: true,
+        /*
+            true sends the cookie over HTTPS and false over HTTP
+        */
+        maxAge: 1000 * 60 * 60 * 24 // 1 day alive
+    },
+    rolling: true // resets the session when the user sends a request
+}));
 
 //connecting to the db
 const pool = new Pool({
@@ -100,6 +130,10 @@ app.post("/login", async (req, res) => {
         return res.send({status: "password error", data: "Wrong Password"});
     }
 
+    // SAVING USER INFO IN THE SESSION
+    req.session.user = {email}
+    console.log("Session Created: ", req.session)
+
     res.send({status: "ok", data: "Login Successful"})
 })
 
@@ -132,6 +166,13 @@ app.post("/forgot-password", async (req, res) => {
         
 })
 
-//starting the server
-const port = process.env.PORT
-app.listen(port, () => console.log("Listening to port "+port))
+app.post("/logout", async (req, res) => {
+    req.session.destroy(err => {
+        if(err) return res.send({status: "error", data: "Login Failed"});
+        res.clearCookie("kidconnectsession1");
+        res.send({status: "ok", data: "Loggout Successful"})
+    });
+})
+
+
+

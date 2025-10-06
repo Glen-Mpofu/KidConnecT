@@ -38,7 +38,8 @@ function handleSubmit(){
   if(password != confirmPassword){
     Toast.show({
       type: "error",
-      text1: "Passwords don't match"
+      text1: "Passwords don't match",
+      useModal: false
     })
     return;
   }
@@ -57,14 +58,16 @@ function handleSubmit(){
     if(res.data.status == 'ok'){
       Toast.show({
         type: "success",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       })
       router.push("/");
     }
     else{
       Toast.show({
         type: "error",
-        text1: res.data.data
+        text1: res.data.data,
+        useModal: false
       });
     }
   }).catch((e) => console.log(e))
