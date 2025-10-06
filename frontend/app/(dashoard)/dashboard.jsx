@@ -3,20 +3,17 @@ import React, {useEffect, useState} from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import L, { icon } from "leaflet"
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
-import ThemedView from '../components/ThemedView'
+import ThemedView from '../../components/ThemedView'
 import Geolocation, { getCurrentPosition } from "react-native-geolocation-service"
-import ThemedText from '../components/ThemedText'
+import ThemedText from '../../components/ThemedText'
 
 //const position = [-23.8494, 29.4480]
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow
+  iconRetinaUrl: "/map_markers/marker-icon-2x.png",
+  iconUrl: "/map_markers/marker-icon.png",
+  shadowUrl: "/map_markers/marker-shadow.png",
 });
 // npm install react-native-geolocation-service
 
