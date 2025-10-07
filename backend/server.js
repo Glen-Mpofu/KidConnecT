@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session") // npm install express-session
+const jwt = require("jsonwebtoken")
 
 const {Pool} = require("pg");  
 require("dotenv").config();
@@ -11,22 +12,6 @@ const { Resend } = require("resend");
 
 const app = express(); 
 
-//password encryption
-const bcrypt = require("bcrypt");
-
-//enabling Cross Origin Resurce Sharing for the app to run on web
-const cors = require("cors");
-
-app.use(cors({
-    origin: ["http://localhost:8081", "http://192.168.137.1:8081"], 
-    credentials: true
-}))
-
-app.use(express.json()) // allows for JSON passing
-
-//starting the server
-const port = process.env.PORT
-app.listen(port, () => console.log("Listening to port "+port))
 
 // allowing our express api to use sessions to save user data when they are logged in
 app.use(session({
@@ -50,6 +35,23 @@ app.use(session({
     },
     rolling: true // resets the session when the user sends a request
 }));
+
+//password encryption
+const bcrypt = require("bcrypt");
+
+//enabling Cross Origin Resurce Sharing for the app to run on web
+const cors = require("cors");
+
+app.use(cors({
+    origin: ["http://localhost:8081", "http://192.168.137.1:8081"], 
+    credentials: true
+}))
+
+app.use(express.json()) // allows for JSON passing
+
+//starting the server
+const port = process.env.PORT
+app.listen(port, () => console.log("Listening to port "+port))
 
 //connecting to the db
 const pool = new Pool({
@@ -84,6 +86,7 @@ pool.query(createGuardianTableQuery).
 then(() => console.log("Table Created")).
 catch(() => console.log("Table Exists"))
 
+//register logic
 app.post("/register", async (req, res) => {
     console.log(req.body);
     //getting the data sent from the frontend
@@ -113,6 +116,7 @@ app.post("/register", async (req, res) => {
     res.send({status: "ok", data: "Guardian Created"})
 })
 
+//login logic
 app.post("/login", async (req, res) => {
     const { email, password } = req.body
     console.log(req.body);
@@ -134,7 +138,9 @@ app.post("/login", async (req, res) => {
     req.session.user = {email}
     console.log("Session Created: ", req.session)
 
-    res.send({status: "ok", data: "Login Successful"})
+    //creating a token
+    const token = jwt.sign({email:email}, "SECRET_KEY", {expiresIn: "7d"})
+    res.send({status: "ok", data: "Login Successful", token: token})
 })
 
 //password change
@@ -185,7 +191,6 @@ app.get("/session", async (req, res) => {
             `, [e]).
             then((result) => {
                 //const {name, surname, age, email, password} = res.rows[0];
-
                 res.send({ status: "ok", data:  result.rows[0]})
                 console.log(res.rows[0])
             }).catch(err => {

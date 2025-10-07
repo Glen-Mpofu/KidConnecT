@@ -3,9 +3,11 @@ import React, {useEffect, useState} from 'react'
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 import L, { icon } from "leaflet"
-import ThemedView from '../../components/ThemedView'
+import ThemedView from '../../../components/ThemedView'
 import Geolocation, { getCurrentPosition } from "react-native-geolocation-service"
-import ThemedText from '../../components/ThemedText'
+import ThemedText from '../../../components/ThemedText'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { useRouter } from 'expo-router'
 
 //const position = [-23.8494, 29.4480]
 
@@ -20,15 +22,38 @@ L.Icon.Default.mergeOptions({
 const Dashboard = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
+  const [userToken, setUserToken] = React.useState(null)
+  const router = useRouter();
+  const [loading, setLoading] = React.useState(true)
 
   useEffect(() => {
-    if(Platform.OS === "web"){
-      getWebLocation();
-    } 
-    else{ 
-      requestLocationPermission();
-    }
+    const init = async () => {
+      const token = await AsyncStorage.getItem("userToken")
+      if(!token){
+        alert(token)
+        router.replace("/")
+        return;
+      }
+      setUserToken(token);
+      setLoading(false);
+      
+        if(Platform.OS === "web"){
+          getWebLocation();
+        } 
+        else{ 
+          requestLocationPermission();
+        }
+    };
+    init();
   }, []);
+
+  if (loading) {
+    return (
+      <ThemedView>
+        <ThemedText>Loading...</ThemedText>
+      </ThemedView>
+    );
+  }
 
   const getWebLocation = () => {
     if(navigator.geolocation){

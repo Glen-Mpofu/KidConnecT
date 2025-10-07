@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import axios from "axios"
 import { Toast } from 'toastify-react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 export default function LogoutDrawer(props) {
     const router = useRouter();
@@ -12,7 +13,10 @@ export default function LogoutDrawer(props) {
         // Clear auth/session here
         // redirect to login screen
 
-        await axios.post("http://192.168.137.1:5000/logout", { withCredentials: true }).
+        ///token
+        const token = await AsyncStorage.getItem("userToken")
+
+        await axios.post("http://192.168.137.1:5000/logout", { withCredentials: true }, {headers: {Authorization: `Bearer ${token}`}}).
             then((res) => {
                 if (res.data.status === "ok") {
                     Toast.show({
@@ -20,7 +24,7 @@ export default function LogoutDrawer(props) {
                         text1: res.data.data,
                         useModal: false
                     })
-                    router.push("/");                    
+                    router.replace("/");                    
                 }
             }).catch((e) => {
                 console.log(e)

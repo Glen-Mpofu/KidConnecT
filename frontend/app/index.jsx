@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, TextInput, Image, useColorScheme, Pressable, TouchableOpacity, Platform } from 'react-native'
-import React, { use, useState } from 'react'
+import { StyleSheet, Text, View, TextInput, Image, useColorScheme, Pressable, TouchableOpacity, Platform, BackHandler } from 'react-native'
+import React, { use, useEffect, useState } from 'react'
 import ThemedText from '../components/ThemedText'
 import ThemedView from '../components/ThemedView'
 import ThemedTextInput from '../components/ThemedTextInput'
@@ -15,12 +15,32 @@ import ThemedLink from '../components/ThemedLink'
 
 //toast 
 import {Toast} from 'toastify-react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const Login = () => {
+  // disabling the back button when the user is in the login screen
+  useEffect(() => {
+    const backAction = () => {
+      Toast.show({
+        type: "success",
+        text1: "back removed",
+        useModal: false
+      })
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress', backAction,
+    );
+
+    return () => backHandler.remove();
+  }, [])
+
+
  const [email,setEmail]=React.useState('');
  const [password,setPassword]=React.useState('');
 
- const [showPassword, setShowPassword] = React.useState(false)
+ const [showPassword, setShowPassword] = React.useState(true)
 //theme
 const colorScheme = useColorScheme();
 const theme = Colors[colorScheme] ?? Colors.light;
@@ -40,7 +60,7 @@ async function handleLogin(){
 
   //https://www.youtube.com/watch?v=hsNlz7-abd0
   axios.post(baseUrl, loginData, {withCredentials: true}).
-  then(res => {
+  then(async res => {
     console.log(loginData)
     if(res.data.status === "ok"){
       Toast.show({
@@ -51,7 +71,11 @@ async function handleLogin(){
 
       setEmailBorderColor(theme.tiBorderColor)
       setPasswordBorderColor(theme.tiBorderColor)
-      router.push("/(dashboard)/dashboard")
+
+      //Setting the token
+        await AsyncStorage.setItem("userToken", res.data.token)
+
+      router.replace("/(protected)/(dashboard)/dashboard")
     }
     else if(res.data.status === "account error"){
       setEmailBorderColor(Colors.error)

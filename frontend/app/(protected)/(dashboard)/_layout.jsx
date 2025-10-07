@@ -4,7 +4,7 @@ import { Stack, useRouter } from 'expo-router'
 import { useFonts } from 'expo-font';
 import ToastManager, { Toast } from "toastify-react-native"
 import {Drawer} from "expo-router/drawer"
-import LogoutDrawer from '../../components/LogoutDrawer';
+import LogoutDrawer from '../../../components/LogoutDrawer';
 import { Ionicons } from '@expo/vector-icons';
 
 const DashboardLayout = () => {
