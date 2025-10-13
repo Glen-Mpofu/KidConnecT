@@ -1,9 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, useColorScheme, View } from 'react-native'
 import React from 'react'
+import { Colors } from '../constants/Colors';
 
 const ThemedText = ({style, children, ...props}) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[useColorScheme] ?? Colors.light
   return (
-    <Text style = {[styles.text, style]} {...props}>{children}</Text>
+    <Text style = {[{color: theme.text}, styles.text, style]} {...props}>{children}</Text>
   )
 }
 

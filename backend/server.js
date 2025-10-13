@@ -6,12 +6,7 @@ const {Pool} = require("pg");
 require("dotenv").config();
 const { nanoid } = require("nanoid")
 
-const { sendEmail } = require("./mailer.js");
-
-const { Resend } = require("resend");
-
 const app = express(); 
-
 
 // allowing our express api to use sessions to save user data when they are logged in
 app.use(session({
@@ -49,14 +44,14 @@ app.use(cors({
 
 app.use(express.json()) // allows for JSON passing
 
-//starting the server
-const port = process.env.PORT
-app.listen(port, () => console.log("Listening to port "+port))
-
+const JWT_SECRET = process.env.JWT_SECRET
 //connecting to the db
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 })
+//starting the server
+const port = process.env.PORT
+app.listen(port, () => console.log("Listening to port "+port))
 
 // Test connection
 pool.query('SELECT version();')
@@ -68,23 +63,66 @@ pool.query('SELECT version();')
     console.error('Database connection error:', err);
   });
 
-module.exports = pool;
 
-// MY SCHEMAS
+// GUARDIAN SCHEMAS
 const createGuardianTableQuery = 
 `CREATE TABLE IF NOT EXISTS Guardian(
     Name VARCHAR(15), 
     Surname VARCHAR(15), 
     Age INTEGER, 
-    Email VARCHAR(100) UNIQUE PRIMARY KEY, 
-    Password VARCHAR(100) NOT NULL
+    Email VARCHAR(100) UNIQUE NOT NULL, 
+    Password VARCHAR(100) NOT NULL,
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid()
 );`
 ;
+
+// method for getting a guardian
+async function getGuardian(email) {
+    const result = await pool.query(
+        `
+            SELECT * FROM GUARDIAN WHERE EMAIL = $1 
+        `,
+        [email]
+    )
+    if(result.rowCount != 1){
+        return {status: "error", data: "No such guardian"};
+    }
+
+    console.log(result.rows[0])
+    return {status: "ok", data: result.rows[0]};
+}
+
+// method for getting a code
+async function getCode(code) {
+    const result = await pool.query(
+        `
+            SELECT * FROM TRACK_CODES WHERE CODE = $1
+        `,
+        [code]
+    );
+
+    if(result.rowCount != 1){
+        return { status: "error", data: "Code not found" }
+    }
+
+    console.log(result.rows[0])
+    return { status: "ok", data: result.rows[0] }
+}
 
 // adding the schema to the database
 pool.query(createGuardianTableQuery).
 then(() => console.log("Table Created")).
 catch(() => console.log("Table Exists"))
+
+// CODE SCHEMA
+pool.query(`
+    CREATE TABLE IF NOT EXISTS TRACK_CODES
+    (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        code VARCHAR(4) UNIQUE NOT NULL,
+        guardian_id uuid REFERENCES GUARDIAN(id)
+    )    
+`)
 
 //register logic
 app.post("/register", async (req, res) => {
@@ -200,4 +238,42 @@ app.get("/session", async (req, res) => {
     }else{
         res.send({ status: "no-session"})
     }
+})
+
+// generating the code and saving it in the db
+app.get("/generate-code", async (req, res) => {
+    const code = nanoid(4)
+    console.log(code)
+
+    const email = req.session.user.email
+    const guardian = getGuardian(email)
+
+    const guardian_id = (await guardian).data.id
+    // persisting the code to the db
+    pool.query(`
+        INSERT INTO TRACK_CODES(code, guardian_id)   
+        VALUES($1, $2) 
+    `,[code, guardian_id]).then((result) => {
+        if(result.rowCount != 1){
+            res.send({status: "error", data: "Failed to input the code. something happened"})
+        }
+
+        res.send({status: "ok", data: "Use the code to connect the child's device"})
+    }).catch(err => {
+        console.error(err)
+        res.send({status: "error", data: err})
+    })
+})
+
+// child add
+app.post("/child_code", async (req, res) => {
+    const childData = req.body
+    console.log(childData)
+
+    const result = await getCode(childData.code)
+    if(result.status === "error"){
+        return res.send({status: result.status, data: result.data})
+    }
+    console.log(result)
+    res.send({status: "ok", data: "Code correct"})
 })

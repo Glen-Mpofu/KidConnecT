@@ -6,8 +6,11 @@ import L, { icon } from "leaflet"
 import ThemedView from '../../../components/ThemedView'
 import Geolocation, { getCurrentPosition } from "react-native-geolocation-service"
 import ThemedText from '../../../components/ThemedText'
+import ThemedButton from '../../../components/ThemedButton'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
+import axios from "axios"
+import { Toast } from 'toastify-react-native'
 
 //const position = [-23.8494, 29.4480]
 
@@ -26,34 +29,21 @@ const Dashboard = () => {
   const router = useRouter();
   const [loading, setLoading] = React.useState(true)
 
+  /*
+    qr code api: 
+    https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example
+  */
   useEffect(() => {
     const init = async () => {
-      const token = await AsyncStorage.getItem("userToken")
-      if(!token){
-        alert(token)
-        router.replace("/")
-        return;
+      if(Platform.OS === "web"){
+        getWebLocation();
+      } 
+      else{ 
+        requestLocationPermission();
       }
-      setUserToken(token);
-      setLoading(false);
-      
-        if(Platform.OS === "web"){
-          getWebLocation();
-        } 
-        else{ 
-          requestLocationPermission();
-        }
     };
     init();
   }, []);
-
-  if (loading) {
-    return (
-      <ThemedView>
-        <ThemedText>Loading...</ThemedText>
-      </ThemedView>
-    );
-  }
 
   const getWebLocation = () => {
     if(navigator.geolocation){
@@ -119,6 +109,25 @@ const Dashboard = () => {
     )
   }
 
+  async function generateTrackCode() {
+    const baseUrl = Platform.OS === "android" ? "http://192.168.137.1:5000/generate-code" : "http://localhost:5000/generate-code"
+    axios.get(baseUrl, {withCredentials: true}).then((res) => {
+      if(res.data.status === "ok"){
+        Toast.show({
+          type: "success",
+          text1: res.data.data,
+          useModal: false
+        })
+      }else{
+        Toast.show({
+          type: "error",
+          text1: res.data.data,
+          useModal: false
+        })
+      }
+    })
+  }
+
   if(!location){
     return(
       <ThemedView>
@@ -145,6 +154,12 @@ const position = [location.latitude, location.longitude]
           <Popup>Hello! This is Your Location</Popup>
         </Marker>
       </MapContainer>
+
+      <ThemedButton onPress={() => {
+        generateTrackCode()
+      }}>
+        <ThemedText>Track my child</ThemedText>
+      </ThemedButton>
     </ThemedView>
   )
 }

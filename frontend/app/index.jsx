@@ -133,8 +133,8 @@ const closeForgotPasswordModal = () =>{
 return (
     <ThemedView style={styles.container}> 
     <Image source={require("../assets/images/bg.jpg")} style={styles.bgImage}/>
-      <ThemedText style={[styles.heading, {color: theme.text}]}> Login</ThemedText>
-      <ThemedText style={[styles.paraText, {color: theme.text}]}>Welcome back to KidConnecT!</ThemedText>
+      <ThemedText style={[styles.heading]}> Login</ThemedText>
+      <ThemedText style={[styles.paraText]}>Welcome back to KidConnecT!</ThemedText>
 
         <ThemedTextInput value={email} onChangeText={setEmail} label = {"Email"} placeholder = {"Email"} keyboardType='email-address' style={[styles.textStyle, {borderColor: eTaBorderColor}]} />
 
@@ -152,11 +152,15 @@ return (
         </View>
 
         <ThemedButton onPress={()=> handleLogin()}>  
-          <ThemedText>Log in</ThemedText>
+          <ThemedText style={styles.btnText}>Log in</ThemedText>
         </ThemedButton>
 
         <ThemedLink href = {"/register"}>
-          <ThemedText>New to KidConnecT? Create Account</ThemedText>
+          <ThemedText style={styles.linkText}>New to KidConnecT? Create Account</ThemedText>
+        </ThemedLink>
+
+        <ThemedLink href = {"/child_track"} style={{marginTop: 0}}>
+          <ThemedText style={styles.linkText}>I am a Child?</ThemedText>
         </ThemedLink>
 
         <Modal 
@@ -165,13 +169,13 @@ return (
           visible={modalVisible}
         >
           <ThemedView style={styles.modalThemeContainer}>
-            <ThemedText style={[styles.heading, {color: theme.text}]}>Forgot Password</ThemedText>
+            <ThemedText style={[styles.heading]}>Forgot Password</ThemedText>
             <ThemedTextInput value={email} onChangeText={setEmail} label = {"Email"} placeholder = {"Email"} keyboardType='email-address' style={[styles.textStyle, {borderColor: eTaBorderColor}]} />
             
             <ThemedButton onPress={()=> 
               handlePasswordChange()
             } style={{backgroundColor: "brown"}}>  
-              <ThemedText>Request Reset Code</ThemedText>
+              <ThemedText style={styles.btnText}>Request Reset Code</ThemedText>
             </ThemedButton>
 
             <TouchableOpacity onPress={closeForgotPasswordModal} style={styles.backIcon}>
@@ -243,4 +247,11 @@ const styles = StyleSheet.create({
     alignSelf:"center",
     margin: 10
   },
+  linkText: {
+    color: "black",
+    fontStyle: "italic"
+  },
+  btnText: {
+    color: "black",
+  }
 })

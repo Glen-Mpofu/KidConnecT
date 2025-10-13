@@ -28,6 +28,7 @@ const RootLayout = () => {
       <Stack>
           <Stack.Screen name='index' options={{headerShown: false}}/>
           <Stack.Screen name='register' options={{headerShown: false}}/>
+          <Stack.Screen name='child_track' options={{headerShown: false}}/>
           <Stack.Screen name='(protected)/(dashboard)' options={{headerShown: false}}/>
           <Stack.Screen name='(protected)' options={{headerShown: false}}/>
       </Stack>
