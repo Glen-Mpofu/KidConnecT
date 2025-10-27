@@ -29,10 +29,10 @@ const DashboardLayout = () => {
     drawerContent={(props) => <LogoutDrawer {...props}/>}
       screenOptions={{
         headerTitleAlign: "center",
-        headerTitleStyle: {fontStyle: "AlanSans"}
+        headerTitleStyle: {fontStyle: "AlanSans", fontWeight: "bold"}
       }}
     >
-      <Drawer.Screen name="dashboard" options={{drawerLabel: "Home", title: "Home",
+      <Drawer.Screen name="dashboard" options={{drawerLabel: "Dashboard", title: "KidConnecT Dashboard",
         drawerIcon: ({ color, size }) => (
           <Ionicons name='home-outline' size={size} color={color}/>
         )

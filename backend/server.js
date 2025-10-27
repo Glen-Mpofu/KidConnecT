@@ -229,8 +229,9 @@ app.get("/session", async (req, res) => {
             `, [e]).
             then((result) => {
                 //const {name, surname, age, email, password} = res.rows[0];
+                console.log(result.rows)
                 res.send({ status: "ok", data:  result.rows[0]})
-                console.log(res.rows)
+                
             }).catch(err => {
                 console.log(err)
             })

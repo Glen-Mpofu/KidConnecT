@@ -20,6 +20,5 @@ const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 5,
         backgroundColor: "green",
-        
     }
 })

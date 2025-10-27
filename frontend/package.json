@@ -10,15 +10,17 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-navigation/drawer": "^7.5.9",
     "axios": "^1.12.2",
     "expo": "~54.0.13",
     "expo-router": "^6.0.12",
     "expo-status-bar": "~3.0.8",
+    "leaflet": "^1.9.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-leaflet": "^5.0.0",
     "react-native": "0.81.4",
     "react-native-web": "^0.21.0",
-    "@react-navigation/drawer": "^7.5.9",
     "toastify-react-native": "^7.2.3"
   },
   "private": true
