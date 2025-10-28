@@ -6,6 +6,10 @@ import ThemedButton from '../../../components/ThemedButton';
 import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import axios from "axios"
+import {Toast} from 'toastify-react-native'
 
 // --- Default Marker Config ---
 delete L.Icon.Default.prototype._getIconUrl;
@@ -19,9 +23,22 @@ const Dashboard = () => {
   const [location, setLocation] = useState(null);
   const [error, setError] = useState(null);
   const { BaseLayer, Overlay } = LayersControl;
+  const [userToken, setUserToken] = useState(null)
+  const [code, setCode] = useState(null)
+  const baseUrl = "http://192.168.137.1:5000"
 
-  useEffect(() => {
-    getWebLocation();
+  useEffect(() => {    
+    const init = async () =>{
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        router.replace("/");
+        return;
+      }
+
+      setUserToken(token);
+      getWebLocation();
+    };
+    init()    
   }, []);
 
   const getWebLocation = () => {
@@ -40,6 +57,32 @@ const Dashboard = () => {
       setError('Geolocation not supported in this browser');
     }
   };
+
+  async function handleSubmit() {
+    await axios.get(`${baseUrl}/generateCode`, { headers: {Authorization: `Bearer ${userToken}`} }).then((res) => {
+      if(res.data.status === "ok"){
+        Toast.show({
+          type: "success",
+          text1: "Use the code to connect the child's device",
+          useModal: false
+        })
+        setCode(res.data.data)
+      }else{
+        Toast.show({
+          type: "error",
+          text1: res.data.data,
+          useModal: false
+        })
+      }
+    }).catch(err => {
+      console.error("Something went wrong", err)
+      Toast.show({
+          type: "error",
+          text1: "Something went wrong",
+          useModal: false
+        })
+    })
+  } 
 
   if (!location) {
     return (
@@ -93,9 +136,17 @@ const Dashboard = () => {
 
       </div>
 
-      <ThemedButton style={styles.trackButton}>
+      <ThemedButton style={styles.trackButton} onPress={()=>{
+        handleSubmit()
+      }}>
         <ThemedText style={styles.trackText}>Track Child</ThemedText>
       </ThemedButton>
+
+      {code != null && (
+        <ThemedText>
+          {code}
+        </ThemedText>
+      )}
     </ThemedView>
   );
 };

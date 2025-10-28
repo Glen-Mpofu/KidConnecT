@@ -38,7 +38,8 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 
 app.use(cors({
-    origin: ["http://localhost:8081", "http://192.168.137.1:8081"], 
+    origin: ["http://localhost:8081", "http://192.168.137.1:8081", 
+        "http://localhost:8082", "http://192.168.137.1:8082"], 
     credentials: true
 }))
 
@@ -65,7 +66,7 @@ pool.query('SELECT version();')
 
 
 // GUARDIAN SCHEMAS
-const createGuardianTableQuery = 
+pool.query( 
 `CREATE TABLE IF NOT EXISTS Guardian(
     Name VARCHAR(15), 
     Surname VARCHAR(15), 
@@ -74,7 +75,44 @@ const createGuardianTableQuery =
     Password VARCHAR(100) NOT NULL,
     id uuid PRIMARY KEY DEFAULT gen_random_uuid()
 );`
-;
+).then(() => console.log("Guardian Table Created")).
+catch((error) => console.log(error));
+
+// track CODE SCHEMA
+pool.query(`
+    CREATE TABLE IF NOT EXISTS TRACK_CODE
+    (
+        code VARCHAR(6) PRIMARY KEY NOT NULL,
+        guardian_id uuid REFERENCES GUARDIAN(id),
+        child_id uuid REFERENCES CHILD(id)
+    )    
+`).then(() => console.log("Track Code Table Created")).
+catch((err) => console.log());
+
+// CHILD SCHEMA
+pool.query(
+    `
+        CREATE TABLE IF NOT EXISTS CHILD(
+            id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+            names VARCHAR(100) NOT NULL, 
+            age INT
+        )
+    `
+).then(() => console.log("Child Table Created")).
+catch((err) => console.log(err));
+
+// Current Location table
+pool.query(
+    `
+        CREATE TABLE IF NOT EXISTS CURRENT_LOCATION(
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            latitude VARCHAR(255) NOT NULL,
+            longitude VARCHAR(255) NOT NULL,
+            child_id uuid REFERENCES CHILD(id) NOT NULL
+        )
+    `
+).then(() => console.log("Current Location Table Created")).
+catch((err) => console.log(err));
 
 // method for getting a guardian
 async function getGuardian(email) {
@@ -92,37 +130,22 @@ async function getGuardian(email) {
     return {status: "ok", data: result.rows[0]};
 }
 
-// method for getting a code
-async function getCode(code) {
-    const result = await pool.query(
-        `
-            SELECT * FROM TRACK_CODES WHERE CODE = $1
-        `,
-        [code]
-    );
+function getEmailFromToken(token){
+    const decoded = jwt.verify(token, "SECRET_KEY")
+    const email = decoded.email
 
-    if(result.rowCount != 1){
-        return { status: "error", data: "Code not found" }
-    }
-
-    console.log(result.rows[0])
-    return { status: "ok", data: result.rows[0] }
+    return email;
 }
 
-// adding the schema to the database
-pool.query(createGuardianTableQuery).
-then(() => console.log("Table Created")).
-catch(() => console.log("Table Exists"))
+async function checkCode(code) {
+    const result = await pool.query(
+        `
+            SELECT * FROM TRACK_CODE WHERE CODE = $1
+        `, [code]
+    )
 
-// CODE SCHEMA
-pool.query(`
-    CREATE TABLE IF NOT EXISTS TRACK_CODES
-    (
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        code VARCHAR(4) UNIQUE NOT NULL,
-        guardian_id uuid REFERENCES GUARDIAN(id)
-    )    
-`)
+    return result.rows
+}
 
 //register logic
 app.post("/register", async (req, res) => {
@@ -242,39 +265,70 @@ app.get("/session", async (req, res) => {
 })
 
 // generating the code and saving it in the db
-app.get("/generate-code", async (req, res) => {
-    const code = nanoid(4)
+app.get("/generateCode", async (req, res) => {
+    const code = nanoid(6)
     console.log(code)
 
-    const email = req.session.user.email
-    const guardian = getGuardian(email)
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.send({ status: "error", data: "No token sent" });
+    const token = authHeader.split(" ")[1];
 
-    const guardian_id = (await guardian).data.id
+    const email = getEmailFromToken(token)
+    console.log(email)
+    const guardian = await getGuardian(email)
+
+    const guardian_id = guardian.data.id
     // persisting the code to the db
     pool.query(`
-        INSERT INTO TRACK_CODES(code, guardian_id)   
+        INSERT INTO TRACK_CODE(code, guardian_id)   
         VALUES($1, $2) 
     `,[code, guardian_id]).then((result) => {
         if(result.rowCount != 1){
             res.send({status: "error", data: "Failed to input the code. something happened"})
         }
 
-        res.send({status: "ok", data: "Use the code to connect the child's device"})
+        res.send({status: "ok", data: code})
     }).catch(err => {
         console.error(err)
         res.send({status: "error", data: err})
     })
 })
 
-// child add
-app.post("/child_code", async (req, res) => {
-    const childData = req.body
-    console.log(childData)
-
-    const result = await getCode(childData.code)
-    if(result.status === "error"){
-        return res.send({status: result.status, data: result.data})
+app.post("/childAdd", async (req, res) =>{
+    console.log(req.body)
+    const {names, code} = req.body
+    const codeExists = await checkCode(code)
+    if(codeExists.length <= 0){
+        return res.send({status: "wrongCode", data: "Double check the tracking code entered"})
     }
-    console.log(result)
-    res.send({status: "ok", data: "Code correct"})
+
+    //inserting child into child table
+    await pool.query(
+        `
+            INSERT INTO CHILD(NAMES)
+            VALUES($1)
+        `, [names]
+    )
+
+    const result = await pool.query(
+        `
+            select id from child where names = $1
+        `, [names]
+    )
+
+    const child_id = result.rows[0].id
+    //UPDATING child id into track code table
+    await pool.query(
+        `
+            UPDATE track_code
+            SET CHILD_ID = $1
+            WHERE CODE = $2
+        `, [child_id, code]
+    )
+
+    res.send({status: "ok", data: "Child location is now being tracked"})
+})
+
+app.post("/setCurrentLocation", async (req, res) => {
+    console.log(req.body)
 })

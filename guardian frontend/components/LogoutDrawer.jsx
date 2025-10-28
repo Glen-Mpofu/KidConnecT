@@ -17,13 +17,14 @@ export default function LogoutDrawer(props) {
         const token = await AsyncStorage.getItem("userToken")
 
         await axios.post("http://192.168.137.1:5000/logout", { withCredentials: true }, {headers: {Authorization: `Bearer ${token}`}}).
-            then((res) => {
+            then(async (res) => {
                 if (res.data.status === "ok") {
                     Toast.show({
                         type: "success",
                         text1: res.data.data,
                         useModal: false
                     })
+                    await AsyncStorage.removeItem("userToken")
                     router.replace("/");                    
                 }
             }).catch((e) => {
